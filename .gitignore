@@ -1,3 +1,6 @@
+# ---------- METADATA ---------
+.metadata/
+
 # ---------- JAVA ---------
 *.class
 # Mobile Tools for Java (J2ME)
