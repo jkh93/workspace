@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block jquery %}
+<script type="text/javascript" src="{{ STATIC_URL }}fullcalendar/fullcalendar.js"></script>
+<link rel='stylesheet' type='text/css' href='{{ STATIC_URL }}fullcalendar/fullcalendar.css' />
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#calendar').fullCalendar({
+		header: {
+			left: 'prev,next today',
+			center: 'title',
+			right: 'month,basicWeek,basicDay'
+		},
+		columnFormat: {
+		    month: 'ddd',    // Mon
+		    week: 'ddd d/M', // Mon 9/7
+		    day: 'dddd d/M'  // Monday 9/7
+		},
+	    events: '/eventfeed',
+	    editable: true,
+	    ignoreTimezone: false,
+		defaultView: '{{ view }}',
+		firstDay: 1,
+		height: 480,
+		dayClick: function(date, allDay, jsEvent, view) {
+			d = date.getDate();
+            m = date.getMonth();
+            m++;
+            y = date.getFullYear();
+            shortdate = y + '-' + m + '-' + d;
+			$("#schedule-brew").attr('href','/brew/schedule/' + shortdate);
+			$("#schedule-process").attr('href','/process/schedule/' + shortdate);
+			$("#schedule-transfer").attr('href','/transfer/schedule/' + shortdate);
+			$("#schedule-package").attr('href','/package/schedule/' + shortdate);
+			$("#schedule-task").attr('href','/task/schedule/' + shortdate);
+			$("#schedule-dialog").dialog();
+		},
+	    eventClick: function(calEvent, jsEvent, view) {
+	    	if(calEvent.editable) {
+	    		jsEvent.preventDefault();
+				d = calEvent.start.getDate();
+	            m = calEvent.start.getMonth();
+	            m++;
+	            y = calEvent.start.getFullYear();
+	            shortdate = y + '-' + m + '-' + d;
+
+				$("#event-dialog").dialog();
+				$("#complete-event").attr('href',calEvent.url);
+				$("#complete-event").click(function(e) {
+					$("#event-dialog").dialog("close");
+				});
+				$("#delete-event").click(function(e) {
+					e.preventDefault();
+					$("#event-dialog").dialog("close");
+				    $( "#delete-dialog" ).dialog({
+				    	buttons: {
+				    		"Delete": function() {
+				    			$( this ).dialog( "close" );
+				    			$.ajax({
+				    	            type: "POST",
+				    	            url:  "/event/delete/",
+				    	            data: {
+				    	            	id: calEvent.id,
+				    	            	csrfmiddlewaretoken: '{{ csrf_token }}'
+				    	            },
+				    	            dataType: "json",
+				    	        });
+				    			$('#calendar').fullCalendar( 'removeEvents', calEvent.id )
+				    			},
+				    			Cancel: function() {
+				    			$( this ).dialog( "close" );
+				    			}
+				    			}
+				    	});
+				  });
+	    	}
+	    	else {
+	    		if(calEvent.url) {
+	    			window.location = calEvent.url;
+	    		}
+	            return false;
+	    	}
+	    },
+		eventDrop: function(event,dayDelta,minuteDelta,allDay,revertFunc) {
+
+            d = event.start.getDate();
+            m = event.start.getMonth();
+            m++;
+            y = event.start.getFullYear();
+
+			$.ajax({
+	            type: "POST",
+	            url:  "/schedule/",
+	            data: {
+	            	id: event.id,
+	            	date: d + '/' + m + '/' + y,
+	            	csrfmiddlewaretoken: '{{ csrf_token }}'
+	            },
+	            dataType: "json",
+	        });
+	    }
+    })
+});
+</script>
+{% endblock %}
+{% block title %}Home{% endblock %}
+{% block body_class %}{{ nav1 }}{% endblock %}
+{% block body_id %}{{ nav2 }}{% endblock %}
+{% block content %}
+    {% if user.is_authenticated %}
+<div class="list-wrapper">
+<div id="calendar">
+<div id="schedule-dialog" title="Schedule Event" style="display:none;">
+<a id="schedule-brew">Schedule Brew</a><br />
+<a id="schedule-process">Schedule Process</a><br />
+<a id="schedule-transfer">Schedule Transfer</a><br />
+<a id="schedule-package">Schedule Packaging</a><br />
+<a id="schedule-task">Schedule Task</a>
+</div>
+<div id="event-dialog" title="Event Actions" style="display:none;">
+<a id="complete-event">Complete Event</a><br />
+<a href="#" id="delete-event">Delete Event</a>
+</div>
+<div id="delete-dialog" title="Delete Event" style="display: none;">
+Delete event?
+</div>
+
+</div>
+    {% else %}
+
+    <section>
+        {% if form.errors %}
+            <p>Your username and password didn't match, please try again.</p>
+        {% endif %}
+
+        <form method="post" action="." autocomplete="off">
+        {% csrf_token %}
+            <p>
+                <label for="id_username">Username:</label>
+                {{ form.username }}
+            </p>
+            <p>
+                <label for="id_password">Password:</label>
+                {{ form.password }}
+            </p>
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}" />
+            {% else %}
+                <input type="hidden" name="next" value="/home/" />
+            {% endif %}
+            <input type="submit" value="login" />
+        </form>
+        <a href="{{ password_reset }}">Forgotten Password?</a>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+

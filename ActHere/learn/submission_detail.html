@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block jquery %}
+{% endblock %}
+{% block title %}Submission Detail{% endblock %}
+{% block body_class %}{{ nav1 }}{% endblock %}
+{% block body_id %}{{ nav2 }}{% endblock %}
+{% block content %}
+<div class="list-wrapper">
+<h2>Submission for Period {{ submission.start_date }} to {{submission.end_date }}</h2>
+<div>
+<h3>Submission Volumes</h3>
+</div>
+<div>
+{{ table.as_html }}
+</div>
+<div class="view-link"><a href="{% url 'submission_download' submission.id %}">View Submission Form</a></div>
+</div>
+{% endblock %}
+

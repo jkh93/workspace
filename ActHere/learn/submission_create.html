@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block jquery %}
+<script>
+$(function() {
+    $( "#id_start_date" ).datepicker({ dateFormat: 'dd/mm/yy' }).val();
+    $( "#id_end_date" ).datepicker({ dateFormat: 'dd/mm/yy',
+    	defaultDate: $('#id_start_date').val() }).val();
+});
+</script>
+{% endblock %}
+{% block title %}Create Submission{% endblock %}
+{% block body_class %}{{ nav1 }}{% endblock %}
+{% block body_id %}{{ nav2 }}{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+<form class="form" action="" method="post" autocomplete="off">
+{% csrf_token %}
+<h2>Create Submission</h2>
+<fieldset>
+<div class="field-req">
+{{ form.start_date.errors }}
+<label for="fm-start-date">Start Date:</label>
+{{ form.start_date }}
+</div>
+<div class="field-req">
+{{ form.end_date.errors }}
+<label for="fm-end-date">End Date:</label>
+{{ form.end_date }}
+</div>
+</fieldset>
+<div id="form-submit" >
+<input name="Submit" value="View Draft Submission" type="submit"/>
+<input type="button" class="cancel-button" value="Cancel" onclick="window.location.href='{{ request.META.HTTP_REFERER }}'">
+</div>
+</form>
+<div>
+{{ table.as_html }}</div>
+</div>
+{% endblock %}
+

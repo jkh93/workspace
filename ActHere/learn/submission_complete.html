@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block jquery %}
+{% endblock %}
+{% block title %}Submission Summary{% endblock %}
+{% block body_class %}{{ nav1 }}{% endblock %}
+{% block body_id %}{{ nav2 }}{% endblock %}
+{% block content %}
+<div class="list-wrapper">
+<form class="form" action="" method="post" autocomplete="off">
+{% csrf_token %}
+<h2>Submission for Period {{ start|date:"M d, Y" }} to {{ end|date:"M d, Y" }}</h2>
+<div>
+<h3>Overdue Volumes</h3>
+</div>
+<div>
+{{ table.as_html }}
+</div>
+<div>
+<h3>Current Volumes</h3>
+</div>
+<div>
+{{ table2.as_html }}
+</div>
+<div>
+<h3>Submission Volumes</h3>
+</div>
+<div>
+{{ table3.as_html }}
+</div>
+<div class="form-wrapper">
+<form class="form" action="" method="post" autocomplete="off">
+<div class="field-req">
+{{ form.notes.errors }}
+<label for="fm-notes">Notes:</label>
+{{ form.notes }}
+</div>
+<div id="form-submit" >
+<input name="Submit" value="Confirm and Submit" type="submit"/>
+<input type="button" class="cancel-button" value="Save Draft" onclick="window.location.href='{% url 'submission_list' %}'">
+</div>
+</form>
+</div>
+{% endblock %}
+
