@@ -3,8 +3,25 @@ from django.shortcuts import get_object_or_404, render
 from django.core.urlresolvers import reverse
 from django.views import generic
 from django.utils import timezone
+from django.contrib.auth.views import login
+from django.utils.decorators import method_decorator
 
 from polls.models import Question, Choice
+from django.contrib.auth.decorators import login_required
+
+def class_view_decorator(function_decorator):
+    """Convert a function based decorator into a class based decorator usable
+    on class based Views.
+
+    Can't subclass the `View` as it breaks inheritance (super in particular),
+    so we monkey-patch instead.
+    """
+
+    def simple_decorator(View):
+        View.dispatch = method_decorator(function_decorator)(View.dispatch)
+        return View
+
+    return simple_decorator
 
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
@@ -17,7 +34,7 @@ class IndexView(generic.ListView):
         """
         return Question.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
 
-
+@class_view_decorator(login_required)
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
@@ -28,11 +45,12 @@ class DetailView(generic.DetailView):
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
 
-
+@class_view_decorator(login_required)
 class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
+@login_required
 def vote(request, question_id):
     p = get_object_or_404(Question, pk=question_id)
     try:
